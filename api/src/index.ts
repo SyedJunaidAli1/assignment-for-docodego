@@ -116,7 +116,7 @@ app.post("/api/auth/signin", async (c) => {
   }
 });
 
-app.post("/api/surveys", async (c) => {
+app.post("/api/surveys", authMiddleware, async (c) => {
   const body = await c.req.json();
 
   const { title, description } = body;
@@ -124,10 +124,11 @@ app.post("/api/surveys", async (c) => {
     return c.json({ error: "Title is required" });
   }
   try {
+    const user = c.get("user");
     const result = await c.env.DB.prepare(
-      "INSERT INTO surveys (title, description) VALUES (?, ?)",
+      "INSERT INTO surveys (user_id, title, description) VALUES (?, ?, ?)",
     )
-      .bind(title, description)
+      .bind(user.id, title, description)
       .run();
 
     return c.json({ success: true, id: result.meta.last_row_id });
@@ -136,16 +137,26 @@ app.post("/api/surveys", async (c) => {
   }
 });
 
-app.get("api/surveys", async (c) => {
-  const result = await c.env.DB.prepare("SELECT * FROM surveys").all();
+app.get("api/surveys", authMiddleware, async (c) => {
+  const user = c.get("user");
+
+  const result = await c.env.DB.prepare(
+    "SELECT * FROM surveys WHERE user_id = ?",
+  )
+    .bind(user.id)
+    .all();
 
   return c.json(result.results);
 });
 
-app.get("api/surveys/:id", async (c) => {
+app.get("api/surveys/:id", authMiddleware, async (c) => {
   const id = c.req.param("id");
-  const result = await c.env.DB.prepare("SELECT * FROM surveys WHERE id = ?")
-    .bind(id)
+  const user = c.get("user");
+
+  const result = await c.env.DB.prepare(
+    "SELECT * FROM surveys WHERE id = ? AND user_id = ?",
+  )
+    .bind(id, user.id)
     .first();
 
   if (!result) {
@@ -154,7 +165,7 @@ app.get("api/surveys/:id", async (c) => {
   return c.json(result);
 });
 
-app.delete("api/surveys/:id", async (c) => {
+app.delete("api/surveys/:id", authMiddleware, async (c) => {
   const id = c.req.param("id");
   try {
     const result = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
@@ -164,8 +175,10 @@ app.delete("api/surveys/:id", async (c) => {
     if (!result) {
       return c.json({ error: "Survey not found" }, 404);
     }
-
-    await c.env.DB.prepare("DELETE FROM surveys WHERE id = ?").bind(id).first();
+    const user = c.get("user");
+    await c.env.DB.prepare("DELETE FROM surveys WHERE id = ? AND user_id = ?")
+      .bind(id, user.id)
+      .run();
     return c.json({ success: true, message: "Survey deleted" });
   } catch (error) {
     console.error(error);
