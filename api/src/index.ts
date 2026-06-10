@@ -12,7 +12,7 @@ app.post("/api/surveys", async (c) => {
     return c.json({ error: "Title is required" });
   }
   try {
-   const result = await c.env.DB.prepare(
+    const result = await c.env.DB.prepare(
       "INSERT INTO surveys (title, description) VALUES (?, ?)",
     )
       .bind(title, description)
@@ -28,6 +28,18 @@ app.get("api/surveys", async (c) => {
   const result = await c.env.DB.prepare("SELECT * FROM surveys").all();
 
   return c.json(result.results);
+});
+
+app.get("api/surveys/:id", async (c) => {
+  const id = c.req.param("id");
+  const result = await c.env.DB.prepare("SELECT * FROM surveys WHERE id = ?")
+    .bind(id)
+    .first();
+
+  if (!result) {
+    return c.json({ error: "Survey not found" });
+  }
+  return c.json(result);
 });
 
 export default app;
