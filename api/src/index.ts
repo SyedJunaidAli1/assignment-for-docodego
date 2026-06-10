@@ -1,7 +1,11 @@
-import { Hono } from 'hono'
+import { Hono } from "hono";
 
-const app = new Hono<{ Bindings: Env }>()
+const app = new Hono<{ Bindings: Env }>();
 
-app.get('/api/health', (c) => c.json({ status: 'ok' }))
+app.get("/api/health", (c) => c.json({ status: "ok" }));
 
-export default app
+app.post("/api/surveys", async (c) => {
+  return c.json({ message: "working" });
+});
+
+export default app;
