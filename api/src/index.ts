@@ -2,10 +2,17 @@ import { Hono } from "hono";
 import { hash } from "bcryptjs";
 import { compare } from "bcryptjs";
 import { generateToken } from "./utils/jwt";
+import { authMiddleware } from "./middleware/auth";
 
 const app = new Hono<{ Bindings: Env }>();
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
+
+app.get("/api/me", authMiddleware, async (c) => {
+  const user = c.get("user");
+
+  return c.json(user);
+});
 
 app.post("/api/auth/signup", async (c) => {
   const body = await c.req.json();
