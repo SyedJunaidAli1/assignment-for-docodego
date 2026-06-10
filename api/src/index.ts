@@ -5,13 +5,23 @@ const app = new Hono<{ Bindings: Env }>();
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
 app.post("/api/surveys", async (c) => {
-  await c.env.DB.prepare(
-    "INSERT INTO surveys (title, description) VALUES (?, ?)",
-  )
-    .bind("sdasdasda", "description")
-    .run();
+  const body = await c.req.json();
 
-  return c.json({ success: true})
+  const { title, description } = body;
+  if (!title) {
+    return c.json({ error: "Title is required" });
+  }
+  try {
+   const result = await c.env.DB.prepare(
+      "INSERT INTO surveys (title, description) VALUES (?, ?)",
+    )
+      .bind(title, description)
+      .run();
+
+    return c.json({ success: true, id: result.meta.last_row_id });
+  } catch {
+    return c.json({ success: false, error: "failed to create surveys" }, 500);
+  }
 });
 
 app.get("api/surveys", async (c) => {
