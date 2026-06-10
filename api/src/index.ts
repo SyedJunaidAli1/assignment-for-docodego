@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import { hash } from "bcryptjs";
+import { compare } from "bcryptjs";
+import { generateToken } from "./utils/jwt";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -37,6 +39,74 @@ app.post("/api/auth/signup", async (c) => {
     },
     201,
   );
+});
+
+app.post("/api/auth/signin", async (c) => {
+  try {
+    const body = await c.req.json();
+
+    const { email, password } = body;
+
+    if (!email || !password) {
+      return c.json(
+        {
+          error: "Email and password are required",
+        },
+        400,
+      );
+    }
+
+    const user = await c.env.DB.prepare("SELECT * FROM user WHERE email = ?")
+      .bind(email)
+      .first<{
+        id: number;
+        email: string;
+        password: string;
+      }>();
+
+    if (!user) {
+      return c.json(
+        {
+          error: "Invalid credentials",
+        },
+        401,
+      );
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return c.json(
+        {
+          error: "Invalid credentials",
+        },
+        401,
+      );
+    }
+
+    const token = generateToken(
+      {
+        id: user.id,
+        email: user.email,
+      },
+      c.env.JWT_SECRET,
+    );
+
+    return c.json({
+      success: true,
+      token,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return c.json(
+      {
+        success: false,
+        error: "Something went wrong",
+      },
+      500,
+    );
+  }
 });
 
 app.post("/api/surveys", async (c) => {
