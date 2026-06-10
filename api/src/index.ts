@@ -42,4 +42,23 @@ app.get("api/surveys/:id", async (c) => {
   return c.json(result);
 });
 
+app.delete("api/surveys/:id", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const result = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
+      .bind(id)
+      .first();
+
+    if (!result) {
+      return c.json({ error: "Survey not found" }, 404);
+    }
+
+    await c.env.DB.prepare("DELETE FROM surveys WHERE id = ?").bind(id).first();
+    return c.json({ success: true, message: "Survey deleted" });
+  } catch (error) {
+    console.error(error);
+    return c.json({ success: false, message: "Falied to delete survey" }, 500);
+  }
+});
+
 export default app;
