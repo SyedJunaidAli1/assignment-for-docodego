@@ -137,7 +137,7 @@ app.post("/api/surveys", authMiddleware, async (c) => {
   }
 });
 
-app.get("api/surveys", authMiddleware, async (c) => {
+app.get("/api/surveys", authMiddleware, async (c) => {
   const user = c.get("user");
 
   const result = await c.env.DB.prepare(
@@ -149,7 +149,7 @@ app.get("api/surveys", authMiddleware, async (c) => {
   return c.json(result.results);
 });
 
-app.get("api/surveys/:id", authMiddleware, async (c) => {
+app.get("/api/surveys/:id", authMiddleware, async (c) => {
   const id = c.req.param("id");
   const user = c.get("user");
 
@@ -165,7 +165,7 @@ app.get("api/surveys/:id", authMiddleware, async (c) => {
   return c.json(result);
 });
 
-app.delete("api/surveys/:id", authMiddleware, async (c) => {
+app.delete("/api/surveys/:id", authMiddleware, async (c) => {
   const id = c.req.param("id");
   try {
     const result = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
