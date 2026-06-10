@@ -186,4 +186,142 @@ app.delete("/api/surveys/:id", authMiddleware, async (c) => {
   }
 });
 
+app.post("/api/surveys/:id/questions", authMiddleware, async (c) => {
+  const surveyId = c.req.param("id");
+
+  const body = await c.req.json();
+
+  const { question, type, options } = body;
+
+  if (!question || !type) {
+    return c.json(
+      {
+        error: "Question and type are required",
+      },
+      400,
+    );
+  }
+
+  const user = c.get("user");
+
+  const survey = await c.env.DB.prepare(
+    "SELECT id FROM surveys WHERE id = ? AND user_id = ?",
+  )
+    .bind(surveyId, user.id)
+    .first();
+
+  if (!survey) {
+    return c.json(
+      {
+        error: "Survey not found",
+      },
+      404,
+    );
+  }
+
+  const result = await c.env.DB.prepare(
+    `INSERT INTO questions
+      (survey_id, question, type, options_json)
+      VALUES (?, ?, ?, ?)`,
+  )
+    .bind(surveyId, question, type, JSON.stringify(options ?? []))
+    .run();
+
+  return c.json({
+    success: true,
+    id: result.meta.last_row_id,
+  });
+});
+
+app.delete("/api/questions/:id", authMiddleware, async (c) => {
+  const questionId = c.req.param("id");
+
+  const user = c.get("user");
+
+  const question = await c.env.DB.prepare(
+    `
+      SELECT q.id
+      FROM questions q
+      JOIN surveys s
+      ON q.survey_id = s.id
+      WHERE q.id = ?
+      AND s.user_id = ?
+      `,
+  )
+    .bind(questionId, user.id)
+    .first();
+
+  if (!question) {
+    return c.json(
+      {
+        error: "Question not found",
+      },
+      404,
+    );
+  }
+
+  await c.env.DB.prepare("DELETE FROM questions WHERE id = ?")
+    .bind(questionId)
+    .run();
+
+  return c.json({
+    success: true,
+    message: "Question deleted",
+  });
+});
+
+app.get("/api/surveys/:id/questions", authMiddleware, async (c) => {
+  try {
+    const surveyId = c.req.param("id");
+
+    const user = c.get("user");
+
+    const survey = await c.env.DB.prepare(
+      `
+        SELECT id
+        FROM surveys
+        WHERE id = ?
+        AND user_id = ?
+        `,
+    )
+      .bind(surveyId, user.id)
+      .first();
+
+    if (!survey) {
+      return c.json(
+        {
+          error: "Survey not found",
+        },
+        404,
+      );
+    }
+
+    const questions = await c.env.DB.prepare(
+      `
+        SELECT *
+        FROM questions
+        WHERE survey_id = ?
+        ORDER BY id ASC
+        `,
+    )
+      .bind(surveyId)
+      .all();
+
+    return c.json({
+      success: true,
+      questions: questions.results,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch questions",
+      },
+      500,
+    );
+  }
+});
+
 export default app;
