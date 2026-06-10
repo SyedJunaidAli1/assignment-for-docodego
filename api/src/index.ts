@@ -8,6 +8,8 @@ const app = new Hono<{ Bindings: Env }>();
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
+//authenticaion
+
 app.get("/api/me", authMiddleware, async (c) => {
   const user = c.get("user");
 
@@ -116,6 +118,7 @@ app.post("/api/auth/signin", async (c) => {
   }
 });
 
+// survey
 app.post("/api/surveys", authMiddleware, async (c) => {
   const body = await c.req.json();
 
@@ -186,6 +189,7 @@ app.delete("/api/surveys/:id", authMiddleware, async (c) => {
   }
 });
 
+//questions
 app.post("/api/surveys/:id/questions", authMiddleware, async (c) => {
   const surveyId = c.req.param("id");
 
@@ -318,6 +322,153 @@ app.get("/api/surveys/:id/questions", authMiddleware, async (c) => {
       {
         success: false,
         error: "Failed to fetch questions",
+      },
+      500,
+    );
+  }
+});
+
+app.get("/api/public/surveys/:id", async (c) => {
+  try {
+    const surveyId = c.req.param("id");
+
+    const survey = await c.env.DB.prepare(
+      `
+        SELECT id, title, description
+        FROM surveys
+        WHERE id = ?
+        `,
+    )
+      .bind(surveyId)
+      .first();
+
+    if (!survey) {
+      return c.json({ error: "Survey not found" }, 404);
+    }
+
+    const questions = await c.env.DB.prepare(
+      `
+        SELECT *
+        FROM questions
+        WHERE survey_id = ?
+        ORDER BY id ASC
+        `,
+    )
+      .bind(surveyId)
+      .all();
+
+    return c.json({
+      survey,
+      questions: questions.results,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return c.json(
+      {
+        error: "Failed to fetch survey",
+      },
+      500,
+    );
+  }
+});
+
+//responser
+app.post("/api/public/surveys/:id/responses", async (c) => {
+  try {
+    const surveyId = c.req.param("id");
+
+    const body = await c.req.json();
+
+    const { answers } = body;
+
+    if (!answers) {
+      return c.json({ error: "Answers are required" }, 400);
+    }
+
+    const survey = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
+      .bind(surveyId)
+      .first();
+
+    if (!survey) {
+      return c.json({ error: "Survey not found" }, 404);
+    }
+
+    const result = await c.env.DB.prepare(
+      `
+        INSERT INTO responses
+        (survey_id, answers_json)
+        VALUES (?, ?)
+        `,
+    )
+      .bind(surveyId, JSON.stringify(answers))
+      .run();
+
+    return c.json({
+      success: true,
+      id: result.meta.last_row_id,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return c.json(
+      {
+        success: false,
+        error: "Failed to submit response",
+      },
+      500,
+    );
+  }
+});
+
+app.get("/api/surveys/:id/responses", authMiddleware, async (c) => {
+  try {
+    const surveyId = c.req.param("id");
+
+    const user = c.get("user");
+
+    const survey = await c.env.DB.prepare(
+      `
+        SELECT id
+        FROM surveys
+        WHERE id = ?
+        AND user_id = ?
+        `,
+    )
+      .bind(surveyId, user.id)
+      .first();
+
+    if (!survey) {
+      return c.json({ error: "Survey not found" }, 404);
+    }
+
+    const responses = await c.env.DB.prepare(
+      `
+        SELECT *
+        FROM responses
+        WHERE survey_id = ?
+        ORDER BY created_at DESC
+        `,
+    )
+      .bind(surveyId)
+      .all();
+
+    const formattedResponses = responses.results.map((response: any) => ({
+      ...response,
+      answers: JSON.parse(response.answers_json),
+    }));
+
+    return c.json({
+      success: true,
+      responses: formattedResponses,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return c.json(
+      {
+        success: false,
+        error: "Failed to fetch responses",
       },
       500,
     );
