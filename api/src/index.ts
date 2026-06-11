@@ -3,8 +3,18 @@ import { hash } from "bcryptjs";
 import { compare } from "bcryptjs";
 import { generateToken } from "./utils/jwt";
 import { authMiddleware } from "./middleware/auth";
+import { cors } from "hono/cors";
 
 const app = new Hono<{ Bindings: Env }>();
+
+app.use(
+  "*",
+  cors({
+    origin: "*",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  }),
+);
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 
