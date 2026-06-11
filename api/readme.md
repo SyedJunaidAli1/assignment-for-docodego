@@ -4,46 +4,41 @@ Backend API for a Survey Builder application built with Hono, Cloudflare Workers
 
 ## Features
 
-* User Authentication
+- User Authentication
+  - Sign Up
+  - Sign In
+  - JWT-based Authentication
+  - Protected Routes
 
-  * Sign Up
-  * Sign In
-  * JWT-based Authentication
-  * Protected Routes
+- Survey Management
+  - Create Survey
+  - Get User Surveys
+  - Get Survey By ID
+  - Delete Survey
 
-* Survey Management
+- Question Management
+  - Create Question
+  - Get Survey Questions
+  - Delete Question
 
-  * Create Survey
-  * Get User Surveys
-  * Get Survey By ID
-  * Delete Survey
+- Survey Responses
+  - Submit Public Responses
+  - View Survey Responses
 
-* Question Management
-
-  * Create Question
-  * Get Survey Questions
-  * Delete Question
-
-* Survey Responses
-
-  * Submit Public Responses
-  * View Survey Responses
-
-* Authorization
-
-  * Users can only manage their own surveys
-  * Users can only view their own survey responses
+- Authorization
+  - Users can only manage their own surveys
+  - Users can only view their own survey responses
 
 ---
 
 ## Tech Stack
 
-* Hono
-* TypeScript
-* Cloudflare Workers
-* Cloudflare D1
-* JWT
-* bcryptjs
+- Hono
+- TypeScript
+- Cloudflare Workers
+- Cloudflare D1
+- JWT
+- bcryptjs
 
 ---
 
@@ -346,12 +341,6 @@ Users can only access and manage surveys that belong to them.
 
 ---
 
-## Future Improvements
+## Note
 
-* Update Survey API
-* Update Question API
-* Password Reset
-* Email Verification
-* Pagination
-* Response Analytics
-* Advanced Validation
+i know this is not production ready code. in this assignment i used lot of new things so my main focus was on working assignemnt. i never used before hono, cloudflare workers, cloudflare d1. i focused on working assigment rather than production readiness.
