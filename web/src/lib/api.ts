@@ -65,10 +65,12 @@ export interface Survey {
 
 export interface Question {
   id: number;
-  surveyId: number;
+  surveyId?: number;
+  survey_id?: number;
   question: string;
-  type: "text" | "single_choice" | "multiple_choice";
+  type: "text" | "single_choice" | "multiple_choice" | "single-choice" | "multiple-choice";
   options: string[] | string | null;
+  options_json?: string | null;
 }
 
 export interface SurveyResponse {

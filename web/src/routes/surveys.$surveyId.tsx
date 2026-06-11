@@ -296,15 +296,16 @@ function SurveyDetailsPage() {
             <div className="mt-6 space-y-4">
               {questions.map((question, index) => {
                 // Parse options if stored as JSON string
+                let rawOptions = question.options_json || question.options;
                 let parsedOptions: string[] = [];
-                if (question.options) {
-                  if (Array.isArray(question.options)) {
-                    parsedOptions = question.options;
+                if (rawOptions) {
+                  if (Array.isArray(rawOptions)) {
+                    parsedOptions = rawOptions;
                   } else {
                     try {
-                      parsedOptions = JSON.parse(question.options);
+                      parsedOptions = JSON.parse(rawOptions);
                     } catch {
-                      parsedOptions = String(question.options)
+                      parsedOptions = String(rawOptions)
                         .split(",")
                         .map((s) => s.trim());
                     }
@@ -324,7 +325,7 @@ function SurveyDetailsPage() {
                         <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-3xs font-semibold uppercase tracking-wider text-indigo-600">
                           {question.type === "text"
                             ? "Text"
-                            : question.type === "single_choice"
+                            : (question.type === "single_choice" || question.type === "single-choice")
                               ? "Single Choice"
                               : "Multiple Choice"}
                         </span>

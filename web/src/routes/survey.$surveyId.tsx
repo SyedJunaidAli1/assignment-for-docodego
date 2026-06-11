@@ -136,15 +136,16 @@ function PublicSurveyPage() {
         <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           {questions.map((question, qIdx) => {
             // Parse options
+            let rawOptions = question.options_json || question.options;
             let parsedOptions: string[] = [];
-            if (question.options) {
-              if (Array.isArray(question.options)) {
-                parsedOptions = question.options;
+            if (rawOptions) {
+              if (Array.isArray(rawOptions)) {
+                parsedOptions = rawOptions;
               } else {
                 try {
-                  parsedOptions = JSON.parse(question.options);
+                  parsedOptions = JSON.parse(rawOptions);
                 } catch {
-                  parsedOptions = String(question.options)
+                  parsedOptions = String(rawOptions)
                     .split(",")
                     .map((s) => s.trim());
                 }
@@ -173,7 +174,7 @@ function PublicSurveyPage() {
                   />
                 )}
 
-                {question.type === "single_choice" && (
+                {(question.type === "single_choice" || question.type === "single-choice") && (
                   <div className="mt-4 space-y-2.5">
                     {parsedOptions.map((opt, oIdx) => (
                       <label
@@ -194,7 +195,7 @@ function PublicSurveyPage() {
                   </div>
                 )}
 
-                {question.type === "multiple_choice" && (
+                {(question.type === "multiple_choice" || question.type === "multiple-choice") && (
                   <div className="mt-4 space-y-2.5">
                     {parsedOptions.map((opt, oIdx) => {
                       const isChecked = (multiSelectAnswers[String(question.id)] || []).includes(opt);
