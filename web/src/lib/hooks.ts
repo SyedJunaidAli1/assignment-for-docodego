@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getMySurveys,
+  getSurvey,
   createSurvey,
   deleteSurvey,
   getQuestions,
@@ -9,10 +10,8 @@ import {
   getPublicSurvey,
   submitResponse,
   getResponses,
-  Survey,
-  Question,
-  SurveyResponse,
 } from "./api";
+import type { Survey, Question, SurveyResponse } from "./api";
 
 // Query Keys definitions
 export const surveyKeys = {
@@ -42,8 +41,13 @@ export const useSurvey = (id: number) => {
 export const useCreateSurvey = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ title, description }: { title: string; description: string }) =>
-      createSurvey(title, description),
+    mutationFn: ({
+      title,
+      description,
+    }: {
+      title: string;
+      description: string;
+    }) => createSurvey(title, description),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: surveyKeys.all });
     },
@@ -78,7 +82,9 @@ export const useCreateQuestion = (surveyId: number) => {
       options?: string[];
     }) => createQuestion(surveyId, question),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.questions(surveyId) });
+      queryClient.invalidateQueries({
+        queryKey: surveyKeys.questions(surveyId),
+      });
     },
   });
 };
@@ -88,7 +94,9 @@ export const useDeleteQuestion = (surveyId: number) => {
   return useMutation({
     mutationFn: (id: number) => deleteQuestion(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: surveyKeys.questions(surveyId) });
+      queryClient.invalidateQueries({
+        queryKey: surveyKeys.questions(surveyId),
+      });
     },
   });
 };
@@ -105,10 +113,13 @@ export const usePublicSurvey = (surveyId: number) => {
 export const useSubmitResponse = (surveyId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (answers: Record<string, string>) => submitResponse(surveyId, answers),
+    mutationFn: (answers: Record<string, string>) =>
+      submitResponse(surveyId, answers),
     onSuccess: () => {
       // Invalidate responses in case the creator is looking at them
-      queryClient.invalidateQueries({ queryKey: surveyKeys.responses(surveyId) });
+      queryClient.invalidateQueries({
+        queryKey: surveyKeys.responses(surveyId),
+      });
     },
   });
 };
