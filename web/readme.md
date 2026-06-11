@@ -102,7 +102,7 @@ VITE_API_URL=http://localhost:8787
 For production:
 
 ```env
-VITE_API_URL=https://your-worker.workers.dev
+VITE_API_URL=https://assignment-for-docodego-web.vercel.app
 ```
 
 ---

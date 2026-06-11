@@ -144,6 +144,12 @@ Deploy to Cloudflare Workers:
 npx wrangler deploy
 ```
 
+Deployed URL:
+
+```bash
+https://assigment-for-docodego.syedjunaidali790.workers.dev
+```
+
 ---
 
 # API Documentation
