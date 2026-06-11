@@ -13,3 +13,21 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+export const signup = async (email: string, password: string) => {
+  const res = await api.post("/api/auth/signup", {
+    email,
+    password,
+  });
+
+  return res.data;
+};
+
+export const signin = async (email: string, password: string) => {
+  const res = await api.post("/api/auth/signin", {
+    email,
+    password,
+  });
+
+  return res.data;
+};
