@@ -75,9 +75,12 @@ export interface Question {
 
 export interface SurveyResponse {
   id: number;
-  surveyId: number;
-  answers_json: string;
+  surveyId?: number;
+  survey_id?: number;
+  answers_json: string | Record<string, string>;
   createdAt?: string;
+  created_at?: string;
+  answers?: Record<string, string>;
 }
 
 export const getSurvey = async (id: number): Promise<Survey> => {

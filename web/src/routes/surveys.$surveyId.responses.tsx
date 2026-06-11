@@ -124,15 +124,18 @@ function ResponsesPage() {
             {responses.map((resp, rIdx) => {
               // Parse answers_json.
               let answersObj: Record<string, string> = {};
-              try {
-                // If it is already parsed or a JSON string
-                if (typeof resp.answers_json === "string") {
-                  answersObj = JSON.parse(resp.answers_json);
-                } else {
-                  answersObj = resp.answers_json;
+              if (resp.answers && typeof resp.answers === "object") {
+                answersObj = resp.answers;
+              } else if (resp.answers_json) {
+                try {
+                  if (typeof resp.answers_json === "string") {
+                    answersObj = JSON.parse(resp.answers_json);
+                  } else {
+                    answersObj = resp.answers_json;
+                  }
+                } catch (err) {
+                  console.error("Failed to parse response answers_json:", err);
                 }
-              } catch (err) {
-                console.error("Failed to parse response answers_json:", err);
               }
 
               // Extract answers nested under 'answers' if that format is used
@@ -140,7 +143,8 @@ function ResponsesPage() {
                 answersObj = (answersObj as any).answers;
               }
 
-              const submittedDate = resp.createdAt ? new Date(resp.createdAt).toLocaleString() : "Unknown date";
+              const rawDate = resp.created_at || resp.createdAt;
+              const submittedDate = rawDate ? new Date(rawDate).toLocaleString() : "Unknown date";
 
               return (
                 <div

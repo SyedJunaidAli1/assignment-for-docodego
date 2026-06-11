@@ -141,13 +141,20 @@ function PublicSurveyPage() {
             if (rawOptions) {
               if (Array.isArray(rawOptions)) {
                 parsedOptions = rawOptions;
-              } else {
+              } else if (typeof rawOptions === "string") {
                 try {
-                  parsedOptions = JSON.parse(rawOptions);
+                  let parsed = JSON.parse(rawOptions);
+                  if (typeof parsed === "string") {
+                    parsed = JSON.parse(parsed);
+                  }
+                  if (Array.isArray(parsed)) {
+                    parsedOptions = parsed;
+                  }
                 } catch {
-                  parsedOptions = String(rawOptions)
+                  parsedOptions = rawOptions
                     .split(",")
-                    .map((s) => s.trim());
+                    .map((s) => s.trim())
+                    .filter(Boolean);
                 }
               }
             }
