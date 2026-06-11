@@ -31,3 +31,18 @@ export const signin = async (email: string, password: string) => {
 
   return res.data;
 };
+
+export const getMySurveys = async () => {
+  const res = await api.get("/api/surveys");
+
+  return res.data;
+};
+
+export const createSurvey = async (title: string, description: string) => {
+  const res = await api.post("/api/surveys", {
+    title,
+    description,
+  });
+
+  return res.data;
+};
