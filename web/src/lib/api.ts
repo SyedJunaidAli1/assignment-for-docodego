@@ -34,8 +34,18 @@ export const signin = async (email: string, password: string) => {
 
 export const getMySurveys = async () => {
   const res = await api.get("/api/surveys");
-
-  return res.data;
+  if (res.data && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (res.data && typeof res.data === "object") {
+    if ("surveys" in res.data && Array.isArray(res.data.surveys)) {
+      return res.data.surveys;
+    }
+    if ("data" in res.data && Array.isArray(res.data.data)) {
+      return res.data.data;
+    }
+  }
+  return [];
 };
 
 export const createSurvey = async (title: string, description: string) => {
@@ -56,8 +66,8 @@ export interface Survey {
 export interface Question {
   id: number;
   surveyId: number;
-  text: string;
-  type: "text" | "single-choice" | "multiple-choice";
+  question: string;
+  type: "text" | "single_choice" | "multiple_choice";
   options: string[] | string | null;
 }
 
@@ -70,6 +80,9 @@ export interface SurveyResponse {
 
 export const getSurvey = async (id: number): Promise<Survey> => {
   const res = await api.get(`/api/surveys/${id}`);
+  if (res.data && typeof res.data === "object" && "data" in res.data) {
+    return res.data.data;
+  }
   return res.data;
 };
 
@@ -80,14 +93,29 @@ export const deleteSurvey = async (id: number) => {
 
 export const getQuestions = async (surveyId: number): Promise<Question[]> => {
   const res = await api.get(`/api/surveys/${surveyId}/questions`);
-  return res.data;
+  if (res.data && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (res.data && typeof res.data === "object") {
+    if ("questions" in res.data && Array.isArray(res.data.questions)) {
+      return res.data.questions;
+    }
+    if ("data" in res.data && Array.isArray(res.data.data)) {
+      return res.data.data;
+    }
+  }
+  return [];
 };
 
 export const createQuestion = async (
   surveyId: number,
-  question: { text: string; type: "text" | "single-choice" | "multiple-choice"; options?: string[] }
+  question: { question: string; type: "text" | "single_choice" | "multiple_choice"; options?: string[] }
 ): Promise<Question> => {
   const res = await api.post(`/api/surveys/${surveyId}/questions`, question);
+
+  if (res.data && typeof res.data === "object" && "data" in res.data) {
+    return res.data.data;
+  }
   return res.data;
 };
 
@@ -100,6 +128,9 @@ export const getPublicSurvey = async (
   id: number
 ): Promise<{ survey: Survey; questions: Question[] }> => {
   const res = await api.get(`/api/public/surveys/${id}`);
+  if (res.data && typeof res.data === "object" && "data" in res.data) {
+    return res.data.data;
+  }
   return res.data;
 };
 
@@ -113,6 +144,18 @@ export const submitResponse = async (
 
 export const getResponses = async (surveyId: number): Promise<SurveyResponse[]> => {
   const res = await api.get(`/api/surveys/${surveyId}/responses`);
-  return res.data;
+  if (res.data && Array.isArray(res.data)) {
+    return res.data;
+  }
+  if (res.data && typeof res.data === "object") {
+    if ("responses" in res.data && Array.isArray(res.data.responses)) {
+      return res.data.responses;
+    }
+    if ("data" in res.data && Array.isArray(res.data.data)) {
+      return res.data.data;
+    }
+  }
+  return [];
 };
+
 

@@ -88,7 +88,8 @@ function PublicSurveyPage() {
     );
   }
 
-  const { survey, questions } = data;
+  const { survey, questions: questionsData = [] } = data;
+  const questions = Array.isArray(questionsData) ? questionsData : [];
 
   if (submitted) {
     return (
@@ -155,9 +156,9 @@ function PublicSurveyPage() {
                 key={question.id}
                 className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
               >
-                <label className="block font-bold text-slate-900">
+                 <label className="block font-bold text-slate-900">
                   <span className="mr-2 text-indigo-600">{qIdx + 1}.</span>
-                  {question.text}
+                  {question.question}
                 </label>
 
                 {/* Render field inputs */}
@@ -172,7 +173,7 @@ function PublicSurveyPage() {
                   />
                 )}
 
-                {question.type === "single-choice" && (
+                {question.type === "single_choice" && (
                   <div className="mt-4 space-y-2.5">
                     {parsedOptions.map((opt, oIdx) => (
                       <label
@@ -193,7 +194,7 @@ function PublicSurveyPage() {
                   </div>
                 )}
 
-                {question.type === "multiple-choice" && (
+                {question.type === "multiple_choice" && (
                   <div className="mt-4 space-y-2.5">
                     {parsedOptions.map((opt, oIdx) => {
                       const isChecked = (multiSelectAnswers[String(question.id)] || []).includes(opt);

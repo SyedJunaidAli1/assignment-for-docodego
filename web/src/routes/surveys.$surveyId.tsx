@@ -16,13 +16,15 @@ function SurveyDetailsPage() {
   const surveyId = parseInt(params.surveyId, 10);
 
   const { data: survey, isLoading: loadingSurvey, error: surveyError } = useSurvey(surveyId);
-  const { data: questions = [], isLoading: loadingQuestions } = useQuestions(surveyId);
+  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId);
+  const questions = Array.isArray(questionsData) ? questionsData : [];
+
 
   const createMutation = useCreateQuestion(surveyId);
   const deleteMutation = useDeleteQuestion(surveyId);
 
   const [text, setText] = useState("");
-  const [type, setType] = useState<"text" | "single-choice" | "multiple-choice">("text");
+  const [type, setType] = useState<"text" | "single_choice" | "multiple_choice">("text");
   const [options, setOptions] = useState<string[]>(["", ""]);
 
   const handleAddOptionField = () => {
@@ -49,7 +51,7 @@ function SurveyDetailsPage() {
 
     try {
       await createMutation.mutateAsync({
-        text,
+        question: text,
         type,
         options: finalOptions,
       });
@@ -184,8 +186,8 @@ function SurveyDetailsPage() {
                     className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition-all focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                   >
                     <option value="text">Text Input</option>
-                    <option value="single-choice">Single Choice (Radio)</option>
-                    <option value="multiple-choice">Multiple Choice (Checkboxes)</option>
+                    <option value="single_choice">Single Choice (Radio)</option>
+                    <option value="multiple_choice">Multiple Choice (Checkboxes)</option>
                   </select>
                 </div>
 
@@ -322,12 +324,12 @@ function SurveyDetailsPage() {
                         <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-3xs font-semibold uppercase tracking-wider text-indigo-600">
                           {question.type === "text"
                             ? "Text"
-                            : question.type === "single-choice"
+                            : question.type === "single_choice"
                               ? "Single Choice"
                               : "Multiple Choice"}
                         </span>
                       </div>
-                      <h4 className="text-base font-bold text-slate-900">{question.text}</h4>
+                      <h4 className="text-base font-bold text-slate-900">{question.question}</h4>
                       {parsedOptions.length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-1">
                           {parsedOptions.map((opt, oIdx) => (

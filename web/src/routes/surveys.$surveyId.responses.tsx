@@ -10,8 +10,12 @@ function ResponsesPage() {
   const surveyId = parseInt(params.surveyId, 10);
 
   const { data: survey, isLoading: loadingSurvey } = useSurvey(surveyId);
-  const { data: questions = [], isLoading: loadingQuestions } = useQuestions(surveyId);
-  const { data: responses = [], isLoading: loadingResponses } = useResponses(surveyId);
+  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId);
+  const { data: responsesData = [], isLoading: loadingResponses } = useResponses(surveyId);
+
+  const questions = Array.isArray(questionsData) ? questionsData : [];
+  const responses = Array.isArray(responsesData) ? responsesData : [];
+
 
   const isLoading = loadingSurvey || loadingQuestions || loadingResponses;
 
@@ -161,7 +165,7 @@ function ResponsesPage() {
                             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                               Question {qIdx + 1}
                             </span>
-                            <p className="text-sm font-bold text-slate-800">{question.text}</p>
+                            <p className="text-sm font-bold text-slate-800">{question.question}</p>
                           </div>
                           <div className="md:col-span-2 rounded-xl bg-slate-50/50 border border-slate-100 px-4 py-3">
                             {answer ? (

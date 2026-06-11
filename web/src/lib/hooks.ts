@@ -77,8 +77,8 @@ export const useCreateQuestion = (surveyId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (question: {
-      text: string;
-      type: "text" | "single-choice" | "multiple-choice";
+      question: string;
+      type: "text" | "single_choice" | "multiple_choice";
       options?: string[];
     }) => createQuestion(surveyId, question),
     onSuccess: () => {
