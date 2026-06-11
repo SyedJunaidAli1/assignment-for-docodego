@@ -5,7 +5,7 @@
   "compatibility_date": "2026-05-22",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
 
   // Add bindings here as you need them, then run `pnpm cf-typegen` to refresh `Env` types.
@@ -16,12 +16,12 @@
     {
       "binding": "DB",
       "database_name": "assignment-docodego",
-      "database_id": "eaa1cd95-0bac-4e89-b5b1-cd3dbed4c5e7",
-    },
+      "database_id": "eaa1cd95-0bac-4e89-b5b1-cd3dbed4c5e7"
+    }
   ],
   "vars": {
-    "JWT_SECRET": "11f636b5f3e803ed75d2b637a98f7171e182371806409f8061353ab41dc2e809",
-  },
+    "JWT_SECRET": "11f636b5f3e803ed75d2b637a98f7171e182371806409f8061353ab41dc2e809"
+  }
   //
   // "kv_namespaces": [
   //   { "binding": "SESSIONS", "id": "<id>" }

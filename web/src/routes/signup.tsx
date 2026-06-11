@@ -1,50 +1,40 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { signup } from "../lib/api";
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import type { FormEvent } from 'react'
+import { useState } from 'react'
+import { signup } from '../lib/api'
 
-export const Route = createFileRoute("/signup")({
+export const Route = createFileRoute('/signup')({
   component: SignUpPage,
-});
+})
 
 function SignUpPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] =
-    useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false)
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState('')
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>,
-  ) => {
-    e.preventDefault();
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
 
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true)
+      setError('')
 
-      await signup(
-        email,
-        password,
-      );
+      await signup(email, password)
 
       navigate({
-        to: "/signin",
-      });
+        to: '/signin',
+      })
     } catch {
-      setError(
-        "Failed to create account",
-      );
+      setError('Failed to create account')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -52,23 +42,15 @@ function SignUpPage() {
         onSubmit={handleSubmit}
         className="flex w-full max-w-md flex-col gap-4 rounded border p-6"
       >
-        <h1 className="text-2xl font-bold">
-          Sign Up
-        </h1>
+        <h1 className="text-2xl font-bold">Sign Up</h1>
 
-        {error && (
-          <p className="text-red-500">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500">{error}</p>}
 
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) =>
-            setEmail(e.target.value)
-          }
+          onChange={(e) => setEmail(e.target.value)}
           className="rounded border p-2"
         />
 
@@ -76,22 +58,14 @@ function SignUpPage() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
+          onChange={(e) => setPassword(e.target.value)}
           className="rounded border p-2"
         />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded border p-2"
-        >
-          {loading
-            ? "Creating..."
-            : "Sign Up"}
+        <button type="submit" disabled={loading} className="rounded border p-2">
+          {loading ? 'Creating...' : 'Sign Up'}
         </button>
       </form>
     </div>
-  );
+  )
 }

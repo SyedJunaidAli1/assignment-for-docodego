@@ -1,40 +1,40 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import type { FormEvent } from "react";
-import { signin } from "../lib/api";
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import type { FormEvent } from 'react'
+import { useState } from 'react'
+import { signin } from '../lib/api'
 
-export const Route = createFileRoute("/signin")({
+export const Route = createFileRoute('/signin')({
   component: SignInPage,
-});
+})
 
 function SignInPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true)
+      setError('')
 
-      const data = await signin(email, password);
+      const data = await signin(email, password)
 
-      localStorage.setItem("token", data.token);
+      localStorage.setItem('token', data.token)
 
       navigate({
-        to: "/dashboard",
-      });
+        to: '/dashboard',
+      })
     } catch {
-      setError("Invalid credentials");
+      setError('Invalid credentials')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -63,9 +63,9 @@ function SignInPage() {
         />
 
         <button type="submit" disabled={loading} className="rounded border p-2">
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? 'Signing in...' : 'Sign In'}
         </button>
       </form>
     </div>
-  );
+  )
 }

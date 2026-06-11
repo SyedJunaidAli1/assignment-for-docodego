@@ -1,106 +1,101 @@
-import { Hono } from "hono";
-import { hash } from "bcryptjs";
-import { compare } from "bcryptjs";
-import { generateToken } from "./utils/jwt";
-import { authMiddleware } from "./middleware/auth";
-import { cors } from "hono/cors";
+import { compare, hash } from 'bcryptjs'
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { authMiddleware } from './middleware/auth'
+import { generateToken } from './utils/jwt'
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<{ Bindings: Env }>()
 
 app.use(
-  "*",
+  '*',
   cors({
-    origin: "*",
-    allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: '*',
+    allowHeaders: ['Content-Type', 'Authorization'],
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   }),
-);
+)
 
-app.get("/api/health", (c) => c.json({ status: "ok" }));
+app.get('/api/health', (c) => c.json({ status: 'ok' }))
 
 //authenticaion
 
-app.get("/api/me", authMiddleware, async (c) => {
-  const user = c.get("user");
+app.get('/api/me', authMiddleware, async (c) => {
+  const user = c.get('user')
 
-  return c.json(user);
-});
+  return c.json(user)
+})
 
-app.post("/api/auth/signup", async (c) => {
-  const body = await c.req.json();
+app.post('/api/auth/signup', async (c) => {
+  const body = await c.req.json()
 
-  const { email, password } = body;
+  const { email, password } = body
 
   if (!email || !password) {
-    return c.json({ error: "All fields are required" }, 400);
+    return c.json({ error: 'All fields are required' }, 400)
   }
 
-  const existingUser = await c.env.DB.prepare(
-    "SELECT id FROM user WHERE email = ?",
-  )
+  const existingUser = await c.env.DB.prepare('SELECT id FROM user WHERE email = ?')
     .bind(email)
-    .first();
+    .first()
 
   if (existingUser) {
-    return c.json({ error: "User already exists" }, 409);
+    return c.json({ error: 'User already exists' }, 409)
   }
 
-  const hashedPassword = await hash(password, 10);
+  const hashedPassword = await hash(password, 10)
 
-  await c.env.DB.prepare("INSERT INTO user (email, password) VALUES (?, ?)")
+  await c.env.DB.prepare('INSERT INTO user (email, password) VALUES (?, ?)')
     .bind(email, hashedPassword)
-    .run();
+    .run()
 
   return c.json(
     {
       success: true,
-      message: "User created successfully",
+      message: 'User created successfully',
     },
     201,
-  );
-});
+  )
+})
 
-app.post("/api/auth/signin", async (c) => {
+app.post('/api/auth/signin', async (c) => {
   try {
-    const body = await c.req.json();
+    const body = await c.req.json()
 
-    const { email, password } = body;
+    const { email, password } = body
 
     if (!email || !password) {
       return c.json(
         {
-          error: "Email and password are required",
+          error: 'Email and password are required',
         },
         400,
-      );
+      )
     }
 
-    const user = await c.env.DB.prepare("SELECT * FROM user WHERE email = ?")
-      .bind(email)
-      .first<{
-        id: number;
-        email: string;
-        password: string;
-      }>();
+    const user = await c.env.DB.prepare('SELECT * FROM user WHERE email = ?').bind(email).first<{
+      id: number
+      email: string
+      password: string
+    }>()
 
     if (!user) {
       return c.json(
         {
-          error: "Invalid credentials",
+          error: 'Invalid credentials',
         },
         401,
-      );
+      )
     }
 
-    const isPasswordValid = await compare(password, user.password);
+    const isPasswordValid = await compare(password, user.password)
 
     if (!isPasswordValid) {
       return c.json(
         {
-          error: "Invalid credentials",
+          error: 'Invalid credentials',
         },
         401,
-      );
+      )
     }
 
     const token = generateToken(
@@ -109,128 +104,120 @@ app.post("/api/auth/signin", async (c) => {
         email: user.email,
       },
       c.env.JWT_SECRET,
-    );
+    )
 
     return c.json({
       success: true,
       token,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     return c.json(
       {
         success: false,
-        error: "Something went wrong",
+        error: 'Something went wrong',
       },
       500,
-    );
+    )
   }
-});
+})
 
 // survey
-app.post("/api/surveys", authMiddleware, async (c) => {
-  const body = await c.req.json();
+app.post('/api/surveys', authMiddleware, async (c) => {
+  const body = await c.req.json()
 
-  const { title, description } = body;
+  const { title, description } = body
   if (!title) {
-    return c.json({ error: "Title is required" });
+    return c.json({ error: 'Title is required' })
   }
   try {
-    const user = c.get("user");
+    const user = c.get('user')
     const result = await c.env.DB.prepare(
-      "INSERT INTO surveys (user_id, title, description) VALUES (?, ?, ?)",
+      'INSERT INTO surveys (user_id, title, description) VALUES (?, ?, ?)',
     )
       .bind(user.id, title, description)
-      .run();
+      .run()
 
-    return c.json({ success: true, id: result.meta.last_row_id });
+    return c.json({ success: true, id: result.meta.last_row_id })
   } catch {
-    return c.json({ success: false, error: "failed to create surveys" }, 500);
+    return c.json({ success: false, error: 'failed to create surveys' }, 500)
   }
-});
+})
 
-app.get("/api/surveys", authMiddleware, async (c) => {
-  const user = c.get("user");
+app.get('/api/surveys', authMiddleware, async (c) => {
+  const user = c.get('user')
 
-  const result = await c.env.DB.prepare(
-    "SELECT * FROM surveys WHERE user_id = ?",
-  )
+  const result = await c.env.DB.prepare('SELECT * FROM surveys WHERE user_id = ?')
     .bind(user.id)
-    .all();
+    .all()
 
-  return c.json(result.results);
-});
+  return c.json(result.results)
+})
 
-app.get("/api/surveys/:id", authMiddleware, async (c) => {
-  const id = c.req.param("id");
-  const user = c.get("user");
+app.get('/api/surveys/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
+  const user = c.get('user')
 
-  const result = await c.env.DB.prepare(
-    "SELECT * FROM surveys WHERE id = ? AND user_id = ?",
-  )
+  const result = await c.env.DB.prepare('SELECT * FROM surveys WHERE id = ? AND user_id = ?')
     .bind(id, user.id)
-    .first();
+    .first()
 
   if (!result) {
-    return c.json({ error: "Survey not found" });
+    return c.json({ error: 'Survey not found' })
   }
-  return c.json(result);
-});
+  return c.json(result)
+})
 
-app.delete("/api/surveys/:id", authMiddleware, async (c) => {
-  const id = c.req.param("id");
+app.delete('/api/surveys/:id', authMiddleware, async (c) => {
+  const id = c.req.param('id')
   try {
-    const result = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
-      .bind(id)
-      .first();
+    const result = await c.env.DB.prepare('SELECT id FROM surveys WHERE id = ?').bind(id).first()
 
     if (!result) {
-      return c.json({ error: "Survey not found" }, 404);
+      return c.json({ error: 'Survey not found' }, 404)
     }
-    const user = c.get("user");
-    await c.env.DB.prepare("DELETE FROM surveys WHERE id = ? AND user_id = ?")
+    const user = c.get('user')
+    await c.env.DB.prepare('DELETE FROM surveys WHERE id = ? AND user_id = ?')
       .bind(id, user.id)
-      .run();
-    return c.json({ success: true, message: "Survey deleted" });
+      .run()
+    return c.json({ success: true, message: 'Survey deleted' })
   } catch (error) {
-    console.error(error);
-    return c.json({ success: false, message: "Falied to delete survey" }, 500);
+    console.error(error)
+    return c.json({ success: false, message: 'Falied to delete survey' }, 500)
   }
-});
+})
 
 //questions
-app.post("/api/surveys/:id/questions", authMiddleware, async (c) => {
-  const surveyId = c.req.param("id");
+app.post('/api/surveys/:id/questions', authMiddleware, async (c) => {
+  const surveyId = c.req.param('id')
 
-  const body = await c.req.json();
+  const body = await c.req.json()
 
-  const { question, type, options } = body;
+  const { question, type, options } = body
 
   if (!question || !type) {
     return c.json(
       {
-        error: "Question and type are required",
+        error: 'Question and type are required',
       },
       400,
-    );
+    )
   }
 
-  const user = c.get("user");
+  const user = c.get('user')
 
-  const survey = await c.env.DB.prepare(
-    "SELECT id FROM surveys WHERE id = ? AND user_id = ?",
-  )
+  const survey = await c.env.DB.prepare('SELECT id FROM surveys WHERE id = ? AND user_id = ?')
     .bind(surveyId, user.id)
-    .first();
+    .first()
 
   if (!survey) {
     return c.json(
       {
-        error: "Survey not found",
+        error: 'Survey not found',
       },
       404,
-    );
+    )
   }
 
   const result = await c.env.DB.prepare(
@@ -239,18 +226,18 @@ app.post("/api/surveys/:id/questions", authMiddleware, async (c) => {
       VALUES (?, ?, ?, ?)`,
   )
     .bind(surveyId, question, type, JSON.stringify(options ?? []))
-    .run();
+    .run()
 
   return c.json({
     success: true,
     id: result.meta.last_row_id,
-  });
-});
+  })
+})
 
-app.delete("/api/questions/:id", authMiddleware, async (c) => {
-  const questionId = c.req.param("id");
+app.delete('/api/questions/:id', authMiddleware, async (c) => {
+  const questionId = c.req.param('id')
 
-  const user = c.get("user");
+  const user = c.get('user')
 
   const question = await c.env.DB.prepare(
     `
@@ -263,32 +250,30 @@ app.delete("/api/questions/:id", authMiddleware, async (c) => {
       `,
   )
     .bind(questionId, user.id)
-    .first();
+    .first()
 
   if (!question) {
     return c.json(
       {
-        error: "Question not found",
+        error: 'Question not found',
       },
       404,
-    );
+    )
   }
 
-  await c.env.DB.prepare("DELETE FROM questions WHERE id = ?")
-    .bind(questionId)
-    .run();
+  await c.env.DB.prepare('DELETE FROM questions WHERE id = ?').bind(questionId).run()
 
   return c.json({
     success: true,
-    message: "Question deleted",
-  });
-});
+    message: 'Question deleted',
+  })
+})
 
-app.get("/api/surveys/:id/questions", authMiddleware, async (c) => {
+app.get('/api/surveys/:id/questions', authMiddleware, async (c) => {
   try {
-    const surveyId = c.req.param("id");
+    const surveyId = c.req.param('id')
 
-    const user = c.get("user");
+    const user = c.get('user')
 
     const survey = await c.env.DB.prepare(
       `
@@ -299,15 +284,15 @@ app.get("/api/surveys/:id/questions", authMiddleware, async (c) => {
         `,
     )
       .bind(surveyId, user.id)
-      .first();
+      .first()
 
     if (!survey) {
       return c.json(
         {
-          error: "Survey not found",
+          error: 'Survey not found',
         },
         404,
-      );
+      )
     }
 
     const questions = await c.env.DB.prepare(
@@ -319,28 +304,28 @@ app.get("/api/surveys/:id/questions", authMiddleware, async (c) => {
         `,
     )
       .bind(surveyId)
-      .all();
+      .all()
 
     return c.json({
       success: true,
       questions: questions.results,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     return c.json(
       {
         success: false,
-        error: "Failed to fetch questions",
+        error: 'Failed to fetch questions',
       },
       500,
-    );
+    )
   }
-});
+})
 
-app.get("/api/public/surveys/:id", async (c) => {
+app.get('/api/public/surveys/:id', async (c) => {
   try {
-    const surveyId = c.req.param("id");
+    const surveyId = c.req.param('id')
 
     const survey = await c.env.DB.prepare(
       `
@@ -350,10 +335,10 @@ app.get("/api/public/surveys/:id", async (c) => {
         `,
     )
       .bind(surveyId)
-      .first();
+      .first()
 
     if (!survey) {
-      return c.json({ error: "Survey not found" }, 404);
+      return c.json({ error: 'Survey not found' }, 404)
     }
 
     const questions = await c.env.DB.prepare(
@@ -365,43 +350,43 @@ app.get("/api/public/surveys/:id", async (c) => {
         `,
     )
       .bind(surveyId)
-      .all();
+      .all()
 
     return c.json({
       survey,
       questions: questions.results,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     return c.json(
       {
-        error: "Failed to fetch survey",
+        error: 'Failed to fetch survey',
       },
       500,
-    );
+    )
   }
-});
+})
 
 //responser
-app.post("/api/public/surveys/:id/responses", async (c) => {
+app.post('/api/public/surveys/:id/responses', async (c) => {
   try {
-    const surveyId = c.req.param("id");
+    const surveyId = c.req.param('id')
 
-    const body = await c.req.json();
+    const body = await c.req.json()
 
-    const { answers } = body;
+    const { answers } = body
 
     if (!answers) {
-      return c.json({ error: "Answers are required" }, 400);
+      return c.json({ error: 'Answers are required' }, 400)
     }
 
-    const survey = await c.env.DB.prepare("SELECT id FROM surveys WHERE id = ?")
+    const survey = await c.env.DB.prepare('SELECT id FROM surveys WHERE id = ?')
       .bind(surveyId)
-      .first();
+      .first()
 
     if (!survey) {
-      return c.json({ error: "Survey not found" }, 404);
+      return c.json({ error: 'Survey not found' }, 404)
     }
 
     const result = await c.env.DB.prepare(
@@ -412,30 +397,30 @@ app.post("/api/public/surveys/:id/responses", async (c) => {
         `,
     )
       .bind(surveyId, JSON.stringify(answers))
-      .run();
+      .run()
 
     return c.json({
       success: true,
       id: result.meta.last_row_id,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     return c.json(
       {
         success: false,
-        error: "Failed to submit response",
+        error: 'Failed to submit response',
       },
       500,
-    );
+    )
   }
-});
+})
 
-app.get("/api/surveys/:id/responses", authMiddleware, async (c) => {
+app.get('/api/surveys/:id/responses', authMiddleware, async (c) => {
   try {
-    const surveyId = c.req.param("id");
+    const surveyId = c.req.param('id')
 
-    const user = c.get("user");
+    const user = c.get('user')
 
     const survey = await c.env.DB.prepare(
       `
@@ -446,10 +431,10 @@ app.get("/api/surveys/:id/responses", authMiddleware, async (c) => {
         `,
     )
       .bind(surveyId, user.id)
-      .first();
+      .first()
 
     if (!survey) {
-      return c.json({ error: "Survey not found" }, 404);
+      return c.json({ error: 'Survey not found' }, 404)
     }
 
     const responses = await c.env.DB.prepare(
@@ -461,28 +446,28 @@ app.get("/api/surveys/:id/responses", authMiddleware, async (c) => {
         `,
     )
       .bind(surveyId)
-      .all();
+      .all()
 
     const formattedResponses = responses.results.map((response: any) => ({
       ...response,
       answers: JSON.parse(response.answers_json),
-    }));
+    }))
 
     return c.json({
       success: true,
       responses: formattedResponses,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     return c.json(
       {
         success: false,
-        error: "Failed to fetch responses",
+        error: 'Failed to fetch responses',
       },
       500,
-    );
+    )
   }
-});
+})
 
-export default app;
+export default app

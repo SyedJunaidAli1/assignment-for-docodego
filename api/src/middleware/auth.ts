@@ -1,33 +1,33 @@
-import { createMiddleware } from "hono/factory";
-import { verifyToken } from "../utils/jwt";
+import { createMiddleware } from 'hono/factory'
+import { verifyToken } from '../utils/jwt'
 
 export const authMiddleware = createMiddleware<{
-  Bindings: Env;
+  Bindings: Env
   Variables: {
     user: {
-      id: number;
-      email: string;
-    };
-  };
+      id: number
+      email: string
+    }
+  }
 }>(async (c, next) => {
-  const authHeader = c.req.header("Authorization");
+  const authHeader = c.req.header('Authorization')
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    return c.json({ error: "Unauthorized" }, 401);
+  if (!authHeader?.startsWith('Bearer ')) {
+    return c.json({ error: 'Unauthorized' }, 401)
   }
 
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(' ')[1]
 
   try {
     if (!token) {
-      return c.json({ error: "Unauthorized" }, 401);
+      return c.json({ error: 'Unauthorized' }, 401)
     }
-    const payload = verifyToken(token, c.env.JWT_SECRET);
+    const payload = verifyToken(token, c.env.JWT_SECRET)
 
-    c.set("user", payload);
+    c.set('user', payload)
 
-    await next();
+    await next()
   } catch {
-    return c.json({ error: "Invalid token" }, 401);
+    return c.json({ error: 'Invalid token' }, 401)
   }
-});
+})

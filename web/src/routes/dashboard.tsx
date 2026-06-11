@@ -1,54 +1,54 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useSurveys, useCreateSurvey, useDeleteSurvey } from "../lib/hooks";
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useCreateSurvey, useDeleteSurvey, useSurveys } from '../lib/hooks'
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute('/dashboard')({
   component: DashboardPage,
-});
+})
 
 function DashboardPage() {
-  const { data: surveys = [], isLoading, error } = useSurveys();
-  const createMutation = useCreateSurvey();
-  const deleteMutation = useDeleteSurvey();
+  const { data: surveys = [], isLoading, error } = useSurveys()
+  const createMutation = useCreateSurvey()
+  const deleteMutation = useDeleteSurvey()
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [copiedId, setCopiedId] = useState<number | null>(null)
 
   const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
+    e.preventDefault()
+    if (!title.trim()) return
 
     try {
-      await createMutation.mutateAsync({ title, description });
-      setTitle("");
-      setDescription("");
+      await createMutation.mutateAsync({ title, description })
+      setTitle('')
+      setDescription('')
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
   const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this survey?")) {
+    if (confirm('Are you sure you want to delete this survey?')) {
       try {
-        await deleteMutation.mutateAsync(id);
+        await deleteMutation.mutateAsync(id)
       } catch (err) {
-        console.error(err);
+        console.error(err)
       }
     }
-  };
+  }
 
   const handleCopyLink = (id: number) => {
-    const publicUrl = `${window.location.origin}/survey/${id}`;
-    navigator.clipboard.writeText(publicUrl);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
+    const publicUrl = `${window.location.origin}/survey/${id}`
+    navigator.clipboard.writeText(publicUrl)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 2000)
+  }
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    window.location.href = "/signin";
-  };
+    localStorage.removeItem('token')
+    window.location.href = '/signin'
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800">
@@ -76,9 +76,7 @@ function DashboardPage() {
           <div className="md:col-span-1">
             <div className="sticky top-24 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
               <h2 className="text-lg font-bold text-slate-900">Create New Survey</h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Design a survey to collect responses.
-              </p>
+              <p className="mt-1 text-sm text-slate-500">Design a survey to collect responses.</p>
 
               <form onSubmit={handleCreate} className="mt-6 space-y-4">
                 <div>
@@ -113,7 +111,7 @@ function DashboardPage() {
                   disabled={createMutation.isPending}
                   className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50"
                 >
-                  {createMutation.isPending ? "Creating..." : "Create Survey"}
+                  {createMutation.isPending ? 'Creating...' : 'Create Survey'}
                 </button>
               </form>
             </div>
@@ -124,7 +122,7 @@ function DashboardPage() {
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <h3 className="text-xl font-bold text-slate-900">Your Surveys</h3>
               <span className="rounded-full bg-slate-200/60 px-3 py-1 text-xs font-semibold text-slate-600">
-                {surveys.length} {surveys.length === 1 ? "survey" : "surveys"}
+                {surveys.length} {surveys.length === 1 ? 'survey' : 'surveys'}
               </span>
             </div>
 
@@ -173,7 +171,7 @@ function DashboardPage() {
                         {survey.title}
                       </h4>
                       <p className="mt-1.5 text-sm text-slate-500 line-clamp-2">
-                        {survey.description || "No description provided."}
+                        {survey.description || 'No description provided.'}
                       </p>
                     </div>
 
@@ -221,8 +219,8 @@ function DashboardPage() {
                       onClick={() => handleCopyLink(survey.id)}
                       className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-semibold transition-all ${
                         copiedId === survey.id
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-600"
-                          : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-600'
+                          : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
                       }`}
                     >
                       {copiedId === survey.id ? (
@@ -269,5 +267,5 @@ function DashboardPage() {
         </div>
       </main>
     </div>
-  );
+  )
 }

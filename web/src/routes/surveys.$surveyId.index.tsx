@@ -1,76 +1,71 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import {
-  useSurvey,
-  useQuestions,
-  useCreateQuestion,
-  useDeleteQuestion,
-} from "../lib/hooks";
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useCreateQuestion, useDeleteQuestion, useQuestions, useSurvey } from '../lib/hooks'
 
-export const Route = createFileRoute("/surveys/$surveyId/")({
+export const Route = createFileRoute('/surveys/$surveyId/')({
   component: SurveyDetailsPage,
-});
+})
 
 function SurveyDetailsPage() {
-  const params = Route.useParams();
-  const surveyId = parseInt(params.surveyId, 10);
+  const params = Route.useParams()
+  const surveyId = parseInt(params.surveyId, 10)
 
-  const { data: survey, isLoading: loadingSurvey, error: surveyError } = useSurvey(surveyId);
-  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId);
-  const questions = Array.isArray(questionsData) ? questionsData : [];
+  const { data: survey, isLoading: loadingSurvey, error: surveyError } = useSurvey(surveyId)
+  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId)
+  const questions = Array.isArray(questionsData) ? questionsData : []
 
-  const createMutation = useCreateQuestion(surveyId);
-  const deleteMutation = useDeleteQuestion(surveyId);
+  const createMutation = useCreateQuestion(surveyId)
+  const deleteMutation = useDeleteQuestion(surveyId)
 
-  const [text, setText] = useState("");
-  const [type, setType] = useState<"text" | "single_choice" | "multiple_choice">("text");
-  const [options, setOptions] = useState<string[]>(["", ""]);
+  const [text, setText] = useState('')
+  const [type, setType] = useState<'text' | 'single_choice' | 'multiple_choice'>('text')
+  const [options, setOptions] = useState<string[]>(['', ''])
 
   const handleAddOptionField = () => {
-    setOptions([...options, ""]);
-  };
+    setOptions([...options, ''])
+  }
 
   const handleRemoveOptionField = (index: number) => {
-    setOptions(options.filter((_, i) => i !== index));
-  };
+    setOptions(options.filter((_, i) => i !== index))
+  }
 
   const handleOptionChange = (index: number, val: string) => {
-    const next = [...options];
-    next[index] = val;
-    setOptions(next);
-  };
+    const next = [...options]
+    next[index] = val
+    setOptions(next)
+  }
 
   const handleCreateQuestion = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!text.trim()) return;
+    e.preventDefault()
+    if (!text.trim()) return
 
     // Filter out empty options for choice questions
     const finalOptions =
-      type !== "text" ? options.map((o) => o.trim()).filter((o) => o !== "") : undefined;
+      type !== 'text' ? options.map((o) => o.trim()).filter((o) => o !== '') : undefined
 
     try {
       await createMutation.mutateAsync({
         question: text,
         type,
         options: finalOptions,
-      });
-      setText("");
-      setType("text");
-      setOptions(["", ""]);
+      })
+      setText('')
+      setType('text')
+      setOptions(['', ''])
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }
 
   const handleDeleteQuestion = async (id: number) => {
-    if (confirm("Are you sure you want to delete this question?")) {
+    if (confirm('Are you sure you want to delete this question?')) {
       try {
-        await deleteMutation.mutateAsync(id);
+        await deleteMutation.mutateAsync(id)
       } catch (err) {
-        console.error(err);
+        console.error(err)
       }
     }
-  };
+  }
 
   if (loadingSurvey) {
     return (
@@ -80,7 +75,7 @@ function SurveyDetailsPage() {
           <p className="mt-4 text-sm text-slate-500 font-medium">Loading survey details...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (surveyError || !survey) {
@@ -97,7 +92,7 @@ function SurveyDetailsPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -110,12 +105,7 @@ function SurveyDetailsPage() {
               to="/dashboard"
               className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -125,9 +115,7 @@ function SurveyDetailsPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-lg font-extrabold text-slate-900 line-clamp-1">
-                {survey.title}
-              </h1>
+              <h1 className="text-lg font-extrabold text-slate-900 line-clamp-1">{survey.title}</h1>
               <p className="text-xs text-slate-500">Manage questions</p>
             </div>
           </div>
@@ -190,7 +178,7 @@ function SurveyDetailsPage() {
                   </select>
                 </div>
 
-                {type !== "text" && (
+                {type !== 'text' && (
                   <div className="space-y-3 pt-2">
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -248,7 +236,7 @@ function SurveyDetailsPage() {
                   disabled={createMutation.isPending}
                   className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-100 transition-all hover:opacity-95 active:scale-98 disabled:opacity-50"
                 >
-                  {createMutation.isPending ? "Adding..." : "Add Question"}
+                  {createMutation.isPending ? 'Adding...' : 'Add Question'}
                 </button>
               </form>
             </div>
@@ -259,7 +247,7 @@ function SurveyDetailsPage() {
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <h3 className="text-xl font-bold text-slate-900">Questions List</h3>
               <span className="rounded-full bg-slate-200/60 px-3 py-1 text-xs font-semibold text-slate-600">
-                {questions.length} {questions.length === 1 ? "question" : "questions"}
+                {questions.length} {questions.length === 1 ? 'question' : 'questions'}
               </span>
             </div>
 
@@ -295,25 +283,25 @@ function SurveyDetailsPage() {
             <div className="mt-6 space-y-4">
               {questions.map((question, index) => {
                 // Parse options if stored as JSON string
-                let rawOptions = question.options_json || question.options;
-                let parsedOptions: string[] = [];
+                const rawOptions = question.options_json || question.options
+                let parsedOptions: string[] = []
                 if (rawOptions) {
                   if (Array.isArray(rawOptions)) {
-                    parsedOptions = rawOptions;
-                  } else if (typeof rawOptions === "string") {
+                    parsedOptions = rawOptions
+                  } else if (typeof rawOptions === 'string') {
                     try {
-                      let parsed = JSON.parse(rawOptions);
-                      if (typeof parsed === "string") {
-                        parsed = JSON.parse(parsed);
+                      let parsed = JSON.parse(rawOptions)
+                      if (typeof parsed === 'string') {
+                        parsed = JSON.parse(parsed)
                       }
                       if (Array.isArray(parsed)) {
-                        parsedOptions = parsed;
+                        parsedOptions = parsed
                       }
                     } catch {
                       parsedOptions = rawOptions
-                        .split(",")
+                        .split(',')
                         .map((s) => s.trim())
-                        .filter(Boolean);
+                        .filter(Boolean)
                     }
                   }
                 }
@@ -329,11 +317,11 @@ function SurveyDetailsPage() {
                           {index + 1}
                         </span>
                         <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-3xs font-semibold uppercase tracking-wider text-indigo-600">
-                          {question.type === "text"
-                            ? "Text"
-                            : (question.type === "single_choice" || question.type === "single-choice")
-                              ? "Single Choice"
-                              : "Multiple Choice"}
+                          {question.type === 'text'
+                            ? 'Text'
+                            : question.type === 'single_choice' || question.type === 'single-choice'
+                              ? 'Single Choice'
+                              : 'Multiple Choice'}
                         </span>
                       </div>
                       <h4 className="text-base font-bold text-slate-900">{question.question}</h4>
@@ -372,12 +360,12 @@ function SurveyDetailsPage() {
                       </svg>
                     </button>
                   </div>
-                );
+                )
               })}
             </div>
           </div>
         </div>
       </main>
     </div>
-  );
+  )
 }

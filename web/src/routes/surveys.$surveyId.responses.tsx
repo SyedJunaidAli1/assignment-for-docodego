@@ -1,23 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSurvey, useQuestions, useResponses } from "../lib/hooks";
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useQuestions, useResponses, useSurvey } from '../lib/hooks'
 
-export const Route = createFileRoute("/surveys/$surveyId/responses")({
+export const Route = createFileRoute('/surveys/$surveyId/responses')({
   component: ResponsesPage,
-});
+})
 
 function ResponsesPage() {
-  const params = Route.useParams();
-  const surveyId = parseInt(params.surveyId, 10);
+  const params = Route.useParams()
+  const surveyId = parseInt(params.surveyId, 10)
 
-  const { data: survey, isLoading: loadingSurvey } = useSurvey(surveyId);
-  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId);
-  const { data: responsesData = [], isLoading: loadingResponses } = useResponses(surveyId);
+  const { data: survey, isLoading: loadingSurvey } = useSurvey(surveyId)
+  const { data: questionsData = [], isLoading: loadingQuestions } = useQuestions(surveyId)
+  const { data: responsesData = [], isLoading: loadingResponses } = useResponses(surveyId)
 
-  const questions = Array.isArray(questionsData) ? questionsData : [];
-  const responses = Array.isArray(responsesData) ? responsesData : [];
+  const questions = Array.isArray(questionsData) ? questionsData : []
+  const responses = Array.isArray(responsesData) ? responsesData : []
 
-
-  const isLoading = loadingSurvey || loadingQuestions || loadingResponses;
+  const isLoading = loadingSurvey || loadingQuestions || loadingResponses
 
   if (isLoading) {
     return (
@@ -27,7 +26,7 @@ function ResponsesPage() {
           <p className="mt-4 text-sm text-slate-500 font-medium">Loading survey responses...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!survey) {
@@ -44,7 +43,7 @@ function ResponsesPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -57,12 +56,7 @@ function ResponsesPage() {
               to="/dashboard"
               className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors"
             >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -72,9 +66,7 @@ function ResponsesPage() {
               </svg>
             </Link>
             <div>
-              <h1 className="text-lg font-extrabold text-slate-900 line-clamp-1">
-                {survey.title}
-              </h1>
+              <h1 className="text-lg font-extrabold text-slate-900 line-clamp-1">{survey.title}</h1>
               <p className="text-xs text-slate-500">View Responses</p>
             </div>
           </div>
@@ -95,7 +87,7 @@ function ResponsesPage() {
         <div className="flex items-center justify-between border-b border-slate-200 pb-4">
           <h2 className="text-xl font-bold text-slate-900 font-display">Submissions</h2>
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
-            {responses.length} {responses.length === 1 ? "response" : "responses"}
+            {responses.length} {responses.length === 1 ? 'response' : 'responses'}
           </span>
         </div>
 
@@ -123,28 +115,28 @@ function ResponsesPage() {
           <div className="mt-6 space-y-6">
             {responses.map((resp, rIdx) => {
               // Parse answers_json.
-              let answersObj: Record<string, string> = {};
-              if (resp.answers && typeof resp.answers === "object") {
-                answersObj = resp.answers;
+              let answersObj: Record<string, string> = {}
+              if (resp.answers && typeof resp.answers === 'object') {
+                answersObj = resp.answers
               } else if (resp.answers_json) {
                 try {
-                  if (typeof resp.answers_json === "string") {
-                    answersObj = JSON.parse(resp.answers_json);
+                  if (typeof resp.answers_json === 'string') {
+                    answersObj = JSON.parse(resp.answers_json)
                   } else {
-                    answersObj = resp.answers_json;
+                    answersObj = resp.answers_json
                   }
                 } catch (err) {
-                  console.error("Failed to parse response answers_json:", err);
+                  console.error('Failed to parse response answers_json:', err)
                 }
               }
 
               // Extract answers nested under 'answers' if that format is used
               if (answersObj && (answersObj as any).answers) {
-                answersObj = (answersObj as any).answers;
+                answersObj = (answersObj as any).answers
               }
 
-              const rawDate = resp.created_at || resp.createdAt;
-              const submittedDate = rawDate ? new Date(rawDate).toLocaleString() : "Unknown date";
+              const rawDate = resp.created_at || resp.createdAt
+              const submittedDate = rawDate ? new Date(rawDate).toLocaleString() : 'Unknown date'
 
               return (
                 <div
@@ -162,7 +154,7 @@ function ResponsesPage() {
 
                   <div className="space-y-4">
                     {questions.map((question, qIdx) => {
-                      const answer = answersObj[String(question.id)];
+                      const answer = answersObj[String(question.id)]
                       return (
                         <div key={question.id} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                           <div className="md:col-span-1">
@@ -181,15 +173,15 @@ function ResponsesPage() {
                             )}
                           </div>
                         </div>
-                      );
+                      )
                     })}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         )}
       </main>
     </div>
-  );
+  )
 }
