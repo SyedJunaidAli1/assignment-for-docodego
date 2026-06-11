@@ -68,7 +68,12 @@ export interface Question {
   surveyId?: number;
   survey_id?: number;
   question: string;
-  type: "text" | "single_choice" | "multiple_choice" | "single-choice" | "multiple-choice";
+  type:
+    | "text"
+    | "single_choice"
+    | "multiple_choice"
+    | "single-choice"
+    | "multiple-choice";
   options: string[] | string | null;
   options_json?: string | null;
 }
@@ -114,7 +119,11 @@ export const getQuestions = async (surveyId: number): Promise<Question[]> => {
 
 export const createQuestion = async (
   surveyId: number,
-  question: { question: string; type: "text" | "single_choice" | "multiple_choice"; options?: string[] }
+  question: {
+    question: string;
+    type: "text" | "single_choice" | "multiple_choice";
+    options?: string[];
+  },
 ): Promise<Question> => {
   const res = await api.post(`/api/surveys/${surveyId}/questions`, question);
 
@@ -130,7 +139,7 @@ export const deleteQuestion = async (id: number) => {
 };
 
 export const getPublicSurvey = async (
-  id: number
+  id: number,
 ): Promise<{ survey: Survey; questions: Question[] }> => {
   const res = await api.get(`/api/public/surveys/${id}`);
   if (res.data && typeof res.data === "object" && "data" in res.data) {
@@ -141,13 +150,17 @@ export const getPublicSurvey = async (
 
 export const submitResponse = async (
   id: number,
-  answers: Record<string, string>
+  answers: Record<string, string>,
 ) => {
-  const res = await api.post(`/api/public/surveys/${id}/responses`, { answers });
+  const res = await api.post(`/api/public/surveys/${id}/responses`, {
+    answers,
+  });
   return res.data;
 };
 
-export const getResponses = async (surveyId: number): Promise<SurveyResponse[]> => {
+export const getResponses = async (
+  surveyId: number,
+): Promise<SurveyResponse[]> => {
   const res = await api.get(`/api/surveys/${surveyId}/responses`);
   if (res.data && Array.isArray(res.data)) {
     return res.data;
@@ -162,5 +175,3 @@ export const getResponses = async (surveyId: number): Promise<SurveyResponse[]> 
   }
   return [];
 };
-
-
