@@ -13,6 +13,9 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SurveysSurveyIdRouteImport } from './routes/surveys.$surveyId'
+import { Route as SurveySurveyIdRouteImport } from './routes/survey.$surveyId'
+import { Route as SurveysSurveyIdResponsesRouteImport } from './routes/surveys.$surveyId.responses'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -34,18 +37,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SurveysSurveyIdRoute = SurveysSurveyIdRouteImport.update({
+  id: '/surveys/$surveyId',
+  path: '/surveys/$surveyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurveySurveyIdRoute = SurveySurveyIdRouteImport.update({
+  id: '/survey/$surveyId',
+  path: '/survey/$surveyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SurveysSurveyIdResponsesRoute =
+  SurveysSurveyIdResponsesRouteImport.update({
+    id: '/responses',
+    path: '/responses',
+    getParentRoute: () => SurveysSurveyIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/survey/$surveyId': typeof SurveySurveyIdRoute
+  '/surveys/$surveyId': typeof SurveysSurveyIdRouteWithChildren
+  '/surveys/$surveyId/responses': typeof SurveysSurveyIdResponsesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/survey/$surveyId': typeof SurveySurveyIdRoute
+  '/surveys/$surveyId': typeof SurveysSurveyIdRouteWithChildren
+  '/surveys/$surveyId/responses': typeof SurveysSurveyIdResponsesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +78,38 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/survey/$surveyId': typeof SurveySurveyIdRoute
+  '/surveys/$surveyId': typeof SurveysSurveyIdRouteWithChildren
+  '/surveys/$surveyId/responses': typeof SurveysSurveyIdResponsesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/signin' | '/signup'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/signin'
+    | '/signup'
+    | '/survey/$surveyId'
+    | '/surveys/$surveyId'
+    | '/surveys/$surveyId/responses'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/signin' | '/signup'
-  id: '__root__' | '/' | '/dashboard' | '/signin' | '/signup'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/signin'
+    | '/signup'
+    | '/survey/$surveyId'
+    | '/surveys/$surveyId'
+    | '/surveys/$surveyId/responses'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/signin'
+    | '/signup'
+    | '/survey/$surveyId'
+    | '/surveys/$surveyId'
+    | '/surveys/$surveyId/responses'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +117,8 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  SurveySurveyIdRoute: typeof SurveySurveyIdRoute
+  SurveysSurveyIdRoute: typeof SurveysSurveyIdRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -99,14 +151,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/surveys/$surveyId': {
+      id: '/surveys/$surveyId'
+      path: '/surveys/$surveyId'
+      fullPath: '/surveys/$surveyId'
+      preLoaderRoute: typeof SurveysSurveyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/survey/$surveyId': {
+      id: '/survey/$surveyId'
+      path: '/survey/$surveyId'
+      fullPath: '/survey/$surveyId'
+      preLoaderRoute: typeof SurveySurveyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/surveys/$surveyId/responses': {
+      id: '/surveys/$surveyId/responses'
+      path: '/responses'
+      fullPath: '/surveys/$surveyId/responses'
+      preLoaderRoute: typeof SurveysSurveyIdResponsesRouteImport
+      parentRoute: typeof SurveysSurveyIdRoute
+    }
   }
 }
+
+interface SurveysSurveyIdRouteChildren {
+  SurveysSurveyIdResponsesRoute: typeof SurveysSurveyIdResponsesRoute
+}
+
+const SurveysSurveyIdRouteChildren: SurveysSurveyIdRouteChildren = {
+  SurveysSurveyIdResponsesRoute: SurveysSurveyIdResponsesRoute,
+}
+
+const SurveysSurveyIdRouteWithChildren = SurveysSurveyIdRoute._addFileChildren(
+  SurveysSurveyIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  SurveySurveyIdRoute: SurveySurveyIdRoute,
+  SurveysSurveyIdRoute: SurveysSurveyIdRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
