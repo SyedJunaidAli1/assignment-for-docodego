@@ -19,6 +19,9 @@ export const authMiddleware = createMiddleware<{
   const token = authHeader.split(" ")[1];
 
   try {
+    if (!token) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
     const payload = verifyToken(token, c.env.JWT_SECRET);
 
     c.set("user", payload);
